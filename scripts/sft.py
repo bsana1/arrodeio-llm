@@ -70,17 +70,28 @@ DEMO_PROMPTS = [
 ]
 
 
+def _ids(x):
+    """apply_chat_template can return a list, a tokenizers.Encoding, or a BatchEncoding."""
+    if hasattr(x, "input_ids"):
+        x = x.input_ids
+    if hasattr(x, "ids"):
+        x = x.ids
+    if x and isinstance(x[0], (list, tuple)):   # nested [[...]]
+        x = x[0]
+    return [int(t) for t in x]
+
+
 def build_example(tok, prompt, response):
     """Chat-template the pair; return (input_ids, labels) with the prompt masked."""
-    full = tok.apply_chat_template(
+    full = _ids(tok.apply_chat_template(
         [{"role": "user", "content": prompt},
          {"role": "assistant", "content": response}],
         tokenize=True, add_generation_prompt=False,
-    )
-    prefix = tok.apply_chat_template(
+    ))
+    prefix = _ids(tok.apply_chat_template(
         [{"role": "user", "content": prompt}],
         tokenize=True, add_generation_prompt=True,
-    )
+    ))
     if full[: len(prefix)] != prefix:          # template quirk — fall back
         prefix = full[: max(1, len(full) // 3)]
     labels = [-100] * len(prefix) + full[len(prefix):]
@@ -93,8 +104,8 @@ def collate(rows, pad_id):
     y = torch.full((len(rows), maxlen), -100, dtype=torch.long)
     m = torch.zeros((len(rows), maxlen), dtype=torch.long)
     for i, (ids, labels) in enumerate(rows):
-        x[i, : len(ids)] = torch.tensor(ids)
-        y[i, : len(labels)] = torch.tensor(labels)
+        x[i, : len(ids)] = torch.tensor(ids, dtype=torch.long)
+        y[i, : len(labels)] = torch.tensor(labels, dtype=torch.long)
         m[i, : len(ids)] = 1
     return x.to(device), y.to(device), m.to(device)
 
