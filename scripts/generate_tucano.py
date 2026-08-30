@@ -35,14 +35,14 @@ def main():
         [{"role": "user", "content": args.prompt}],
         tokenize=True, add_generation_prompt=True, return_tensors="pt",
     )
-    attn = torch.ones_like(enc)
+    ids = enc["input_ids"] if hasattr(enc, "keys") else enc
     print("(gerando… ~1.5 tok/s)\n", flush=True)
     out = model.generate(
-        enc, attention_mask=attn, max_new_tokens=args.tokens, do_sample=True,
-        temperature=args.temperature, top_k=args.top_k, top_p=1.0,
+        input_ids=ids, attention_mask=torch.ones_like(ids), max_new_tokens=args.tokens,
+        do_sample=True, temperature=args.temperature, top_k=args.top_k, top_p=1.0,
         repetition_penalty=1.2, pad_token_id=tok.eos_token_id,
     )
-    print(tok.decode(out[0][enc.shape[1]:], skip_special_tokens=True))
+    print(tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True))
 
 
 if __name__ == "__main__":

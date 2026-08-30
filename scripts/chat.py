@@ -55,13 +55,14 @@ def main():
         enc = tok.apply_chat_template([{"role": "user", "content": user}],
                                       tokenize=True, add_generation_prompt=True,
                                       return_tensors="pt")
+        ids = (enc["input_ids"] if hasattr(enc, "keys") else enc)
         print("  (…)", flush=True)
         out = model.generate(
-            enc, attention_mask=torch.ones_like(enc), max_new_tokens=args.tokens,
+            input_ids=ids, attention_mask=torch.ones_like(ids), max_new_tokens=args.tokens,
             do_sample=True, temperature=args.temperature, top_k=50,
             repetition_penalty=1.2, pad_token_id=tok.eos_token_id,
         )
-        print("\n" + tok.decode(out[0][enc.shape[1]:], skip_special_tokens=True).strip() + "\n")
+        print("\n" + tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True).strip() + "\n")
 
 
 if __name__ == "__main__":

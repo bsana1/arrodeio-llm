@@ -110,18 +110,26 @@ def collate(rows, pad_id):
     return x.to(device), y.to(device), m.to(device)
 
 
+def chat_inputs(tok, prompt):
+    """A prompt -> {input_ids, attention_mask} tensors on `device`.
+    apply_chat_template may hand back a bare tensor or a BatchEncoding."""
+    enc = tok.apply_chat_template([{"role": "user", "content": prompt}],
+                                  tokenize=True, add_generation_prompt=True,
+                                  return_tensors="pt")
+    ids = enc["input_ids"] if hasattr(enc, "keys") else enc
+    ids = ids.to(device)
+    return {"input_ids": ids, "attention_mask": torch.ones_like(ids)}
+
+
 @torch.no_grad()
 def demo(model, tok, n_tokens=70):
     model.eval()
     for p in DEMO_PROMPTS:
-        enc = tok.apply_chat_template([{"role": "user", "content": p}],
-                                      tokenize=True, add_generation_prompt=True,
-                                      return_tensors="pt").to(device)
-        out = model.generate(enc, attention_mask=torch.ones_like(enc),
-                             max_new_tokens=n_tokens, do_sample=True, temperature=0.7,
-                             top_k=50, repetition_penalty=1.2,
+        enc = chat_inputs(tok, p)
+        out = model.generate(**enc, max_new_tokens=n_tokens, do_sample=True,
+                             temperature=0.7, top_k=50, repetition_penalty=1.2,
                              pad_token_id=tok.eos_token_id)
-        text = tok.decode(out[0][enc.shape[1]:], skip_special_tokens=True)
+        text = tok.decode(out[0][enc["input_ids"].shape[1]:], skip_special_tokens=True)
         print(f"  › {p}\n    " + text.replace("\n", "\n    ")[:320], flush=True)
     model.train()
 
