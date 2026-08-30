@@ -1,0 +1,3 @@
+torch>=2.0.0
+numpy>=1.24          # torch prints a startup warning without it; not used directly
+transformers>=4.35   # Phase 1b only — fine-tuning a pretrained Portuguese GPT-2

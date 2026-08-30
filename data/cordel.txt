@@ -1,0 +1,37 @@
+# cordel.txt
+#
+# This file is intentionally empty to start.
+#
+# Cordel verses are AUTHORED poetry, not anonymous folk sayings like ditados —
+# copyright applies. Safe sources to pull real, public-domain cordel from:
+#
+#   - Leandro Gomes de Barros (died 1918) — public domain
+#   - João Martins de Athayde (died 1959) — public domain in Brazil (life + 70 years)
+#
+# Real archives to pull from:
+#   - Fundação Casa de Rui Barbosa — cordel digital collection
+#   - UFPB (Universidade Federal da Paraíba) — cordel digital archive
+#   - Domínio Público (dominiopublico.gov.br) — Brazilian government public domain library
+#
+# Workflow:
+#   1. Download/transcribe folhetos (booklets) from the sources above as plain text
+#   2. Strip any editorial/scanning headers, keep just the verses
+#   3. One stanza per block, blank line between stanzas (see format below)
+#   4. Append here, or better — split into data/cordel/<title>.txt per folheto
+#      and concatenate at training time (see scripts/prepare_data.py)
+#
+# AUTOMATED: scripts/fetch_cordel.py pulls proofread public-domain folhetos
+# straight from pt.wikisource.org into data/cordel/<slug>.txt in exactly that
+# format. Run it, then re-run prepare_data.py + train.py. Edit DEFAULT_WORKS
+# in that script to add more titles from:
+#   https://pt.wikisource.org/wiki/Autor:Leandro_Gomes_de_Barros
+#
+# Format example (illustrative structure only, not real cordel text):
+#
+# Vou contar uma história
+# de um matuto sertanejo
+# que trocou sua viola
+# por um sonho e um desejo
+# andou légua e mais légua
+# sem achar o que buscava
+#

@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# macOS
+.DS_Store
+
+# Generated model artifacts (rebuild with the scripts)
+model/tokenizer.json
+model/checkpoint.pt
+model/cordel-ft/
+
+# Generated corpus (rebuild: python scripts/prepare_data.py)
+data/corpus.txt
+
+# HuggingFace cache, if it lands here
+.cache/
