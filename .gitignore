@@ -11,9 +11,12 @@ __pycache__/
 model/tokenizer.json
 model/checkpoint.pt
 model/cordel-ft/
+model/cordel-sft/
+model/cordel-sft-lora/
 
-# Generated corpus (rebuild: python scripts/prepare_data.py)
+# Generated data (rebuild with the scripts)
 data/corpus.txt
+data/sft_synth.jsonl
 
-# HuggingFace cache, if it lands here
+# HuggingFace model cache, if it lands here
 .cache/

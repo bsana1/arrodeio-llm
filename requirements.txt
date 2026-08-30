@@ -1,3 +1,6 @@
 torch>=2.0.0
 numpy>=1.24          # torch prints a startup warning without it; not used directly
-transformers>=4.35   # Phase 1b only — fine-tuning a pretrained Portuguese GPT-2
+
+# Phases 1b / 2+ only — fine-tuning pretrained Portuguese models
+transformers>=4.35
+peft>=0.11           # LoRA adapters for Phase 2 SFT on Tucano-1b1-Instruct
