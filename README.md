@@ -117,6 +117,27 @@ sharpening for hundreds more. It runs to a tuned `max_iters` and keeps a rolling
 save. `generate_ft.py` primes the model with two real stanzas by default
 (`--raw` to disable) to keep it from sliding back into encyclopedia prose.
 
+### Track 2, Phase 2 — SFT with LoRA (needs a GPU)
+
+`gpt2-small-portuguese` is a *completion* model — it never learned to follow an
+instruction, and no dataset we could hand-build taught it to (see git history for
+three failed attempts). Phase 2 switches to **`TucanoBR/Tucano-1b1-Instruct`**
+(1.1B, native Brazilian Portuguese, already SFT+DPO'd by PUCRS) and adds cordel
+style + the *mote e glosa* task on top.
+
+- **Data:** `data/sft.jsonl` (50 hand-written `mote → glosa` pairs) +
+  `data/sft_synth.jsonl` (build with `scripts/make_sft_data.py` — *instruction
+  backtranslation*: real stanzas kept as verbatim responses, plausible
+  instructions fabricated).
+- **`scripts/sft.py`:** LoRA (freeze the 1.1B base, train ~4.5M adapter params) +
+  masked loss (labels `-100` on the instruction tokens) + the chat template.
+- **`scripts/chat.py`:** a REPL. `--base` talks to raw Tucano for contrast.
+
+A 1.1B model won't fine-tune on a small laptop (an 8 GB CPU machine needs ~90 s
+*per example*). Run it on a free GPU instead:
+
+**[▶ Open `notebooks/train_sft.ipynb` in Colab](https://colab.research.google.com/github/bsana1/arrodeio-llm/blob/main/notebooks/train_sft.ipynb)** — ~10 min on a free T4, then download the ~9 MB adapter into `model/cordel-sft-lora/` and run `chat.py` locally (slow inference, but it works).
+
 ## Contributing to the dataset
 
 More material makes both models better (and the fine-tuned one noticeably so).
@@ -134,8 +155,9 @@ Welcome:
 - [x] Phase 1 — pretrain from scratch on ditados + cordel (mechanics; output
       stays noisy on a corpus this small)
 - [x] Phase 1b — style fine-tune a pretrained PT GPT-2 for readable output
-- [ ] Phase 2 — SFT: hand-written `(pergunta, resposta)` pairs, prompt tokens
-      masked, so the model *responds* instead of just continuing
+- [~] Phase 2 — SFT with LoRA on Tucano-1b1-Instruct: masked-loss instruction
+      tuning for the *mote e glosa* task (`scripts/sft.py`, run on a free GPU
+      via `notebooks/train_sft.ipynb`)
 - [ ] Phase 3 — preference pairs + a tiny reward model
 - [ ] Phase 4 — best-of-N reranking / rejection-sampling fine-tune
 - [x] Grow the corpus with real public-domain cordel (`scripts/fetch_cordel.py`

@@ -31,6 +31,7 @@ OUT = os.path.join(BASE, "..", "data", "sft_synth.jsonl")
 
 MAX_PAIRS = 600
 MAX_CONTINUATION = 220
+MAX_PER_FOLHETO = 55       # keep the big folhetos (Oliveiros!) from dominating
 
 # keyword pattern -> theme label. First match wins; order = priority.
 THEMES = [
@@ -94,7 +95,12 @@ def main():
     for path in files:
         sts = stanzas(path)
         n_stanzas += len(sts)
-        for i, s in enumerate(sts):
+        if len(sts) > MAX_PER_FOLHETO:                       # subsample big folhetos
+            keep = sorted(random.sample(range(len(sts)), MAX_PER_FOLHETO))
+        else:
+            keep = list(range(len(sts)))
+        for i in keep:
+            s = sts[i]
             pairs.append({
                 "prompt": random.choice(INSTR).format(t=theme_for(s)),
                 "response": s,
