@@ -122,7 +122,8 @@ save. `generate_ft.py` primes the model with two real stanzas by default
 `gpt2-small-portuguese` is a *completion* model — it never learned to follow an
 instruction, and no dataset we could hand-build taught it to (see git history for
 three failed attempts). Phase 2 switches to **`TucanoBR/Tucano-1b1-Instruct`**
-(1.1B, native Brazilian Portuguese, already SFT+DPO'd by PUCRS) and adds cordel
+(1.1B, native Brazilian Portuguese, pretrained on GigaVerbo then SFT+DPO — by
+the University of Bonn, lead author Nicholas Kluge Corrêa) and adds cordel
 style + the *mote e glosa* task on top.
 
 - **Data:** `data/sft.jsonl` (50 hand-written `mote → glosa` pairs) +
