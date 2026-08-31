@@ -1,0 +1,54 @@
+{
+  "items": [
+    {
+      "theme": "a seca no sertão",
+      "mote": "Água mole em pedra dura, tanto bate até que fura."
+    },
+    {
+      "theme": "um cangaceiro valente",
+      "mote": "Quem não arrisca, não petisca."
+    },
+    {
+      "theme": "a viola do cantador",
+      "mote": "Quem canta seus males espanta."
+    }
+  ],
+  "stages": {
+    "scratch": {
+      "meta": {
+        "n": 1,
+        "kind": "completion",
+        "label": "do zero (char/BPE GPT ~2M)"
+      },
+      "by_theme": {
+        "a seca no sertão": "Vou contar uma história\nPara o veio aindada\nAchorrontador\nTra a mulher se viata\nEu lhe disse de rr\n\nO homem que tinha uma velha\n\nA velha de ferida\n\nEm essa dele\nE que traquesada,\nEu tenhorança é adu\nSeu o a seus\nQue o podia as reina o sábio disse: — rnado\nNão é a",
+        "um cangaceiro valente": "Vou contar uma históriasão\nDe aquiz aquila\nNas de condicansandouas\nCom torinado a na que melhar?\n\nOnde um diasar\n\nFerrabraz de ro Ceminar agên\nSai\nFora\nVis contos grande tronto rema queréu-me\nEscho o Turr\nA donzela\nAquela agora mais de um",
+        "a viola do cantador": "Vou contar uma história.\n\nAís dela cartinado\nSerca natureza\nSau onça o sigurado\nTudo o banha nele\nFalá agora da choia curasu\nE o cergumpor dois\nTender, úliado o mãos,\nE de áligeiros\nE dizerguntou-lhe quem é vina\n"
+      }
+    },
+    "gpt2": {
+      "meta": {
+        "n": 2,
+        "kind": "completion",
+        "label": "GPT-2 português, cru (124M)"
+      },
+      "by_theme": {
+        "a seca no sertão": "Em 2010, a Rede Globo exibiu os episódios \"A Guerra dos Botos\", de 12 capítulos e 14 minutos cada.\nO Império Britânico do Brasil é um império que exerce o poder na região centro-oeste brasileiro em direção ao sul da Bahia (Bahia), ocupando partes das atuais Baixa Oriental baiano, Central do país e Sudeste Baiano. No começo deste século era governado pelo Governador e Capitão-Mor de Pernambuco, Francisco Gomes da Costa, tendo sido governador por cinco vezes consecutivas entre 1809 e 1824.\n\nNo fim desse período, devido à divisão",
+        "um cangaceiro valente": "Em \"The Man of the Dragon\", Jack Donaghy se torna o novo dono do barco, após ter sido ferido gravemente por um urso que devora um barco de pesca e estava tentando escapar. No jogo seguinte ele é baleado pelo urso e morre no naufrágio em uma tentativa falhada. No mesmo dia, Jack recebe a visita da sua falecida tia na Casa Amarela e diz para ela lhe dar um enterro digno.\n\nA série continua sendo exibida pela CBS, pela CBS All Access (que também publicou episódios duplos) com a estreia prevista para",
+        "a viola do cantador": "“As histórias são um pouco mais engraçadas e divertidas que os romances de ficção histórica. Mas cada conto tem algo especial para ser contado, o primeiro romance é muito estranho, não se sabe porque eu só sei como tenho feito.\"\n\n“A viola do civeiro” (2012) foi escrito por David A. Barrie e lançado em 26 de novembro no Brasil por Walmart.\nO Castelo de São Marcos localiza-se na freguesia dos São Marcos, concelho da Vila das Velas.\n\nEm posição dominante desde meados do"
+      }
+    },
+    "gpt2-ft": {
+      "meta": {
+        "n": 3,
+        "kind": "completion",
+        "label": "GPT-2 português + estilo cordel"
+      },
+      "by_theme": {
+        "a seca no sertão": "—O homem que nascer nele morreu.\nFoi um pai malvado, pobre e sem terra.\n—O pai de Dona Teresa morreu?\n—A mãe dele nunca soube!\n\nE deu-lhe então o filho.\nÉ bastante mansa como se chamava,\nMatou ele em algum lugar\nDe gente muito boa,\nNunca achou coisa pior,\nNem dinheiro nem casa...\nPor isso eu dou muitas ervas,\nPorque não consegui vender,\nEu pensei: —Minha única maneira\nDo mundo me vendeu agora.",
+        "um cangaceiro valente": "—Diga como que está doente...\nEle saiu com pouco mais de um cavalo.\nO velho vinha chegando,\nE disse contente:\n—Eu quero vender o cavalo!\nSe o rapaz comer-lhe caro,\nMas não é porque já estou cansado?\nSapatos à procura desse animal\nPor medo dele morrer pobre\nÉ por isso só lhe pedia dinheiro!\n\nQuando ele estava se aproximando\nDisse o velho da portaː\n—Digo agora vá buscar\nEsse cavalo morto, mas eu tenho no peito",
+        "a viola do cantador": "A mão que segura\nDepois da queda,\nDepois dela arrancada.\n\nDisse Oliveiros: Como eu não pode me apertar\nPorque estás ferido?\nSó tenho um braço no ombro.\nE’ tempo de ir embora...\n\nA velha se espantava e disse: —Já posso dar volta!\n\nNão confiando que o cavalo cahiu,\nFazendo-lhe desmaio logo ao somr,\nNo chão correndo com seu sangue sahir,\nAquela agora é de ferro."
+      }
+    }
+  }
+}

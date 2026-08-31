@@ -155,11 +155,15 @@ Welcome:
 - [x] Phase 1 — pretrain from scratch on ditados + cordel (mechanics; output
       stays noisy on a corpus this small)
 - [x] Phase 1b — style fine-tune a pretrained PT GPT-2 for readable output
-- [~] Phase 2 — SFT with LoRA on Tucano-1b1-Instruct: masked-loss instruction
+- [x] Phase 2 — SFT with LoRA on Tucano-1b1-Instruct: masked-loss instruction
       tuning for the *mote e glosa* task (`scripts/sft.py`, run on a free GPU
       via `notebooks/train_sft.ipynb`)
 - [ ] Phase 3 — preference pairs + a tiny reward model
 - [ ] Phase 4 — best-of-N reranking / rejection-sampling fine-tune
+- [ ] a `samples/comparison.md`-style side-by-side + a small web demo
+
+See **[samples/comparison.md](samples/comparison.md)** for the same prompt run
+through every stage (`scripts/collect_samples.py`).
 - [x] Grow the corpus with real public-domain cordel (`scripts/fetch_cordel.py`
       — 17 folhetos, ~150k chars, from pt.wikisource.org)
 - [ ] Community-contributed regional ditados
