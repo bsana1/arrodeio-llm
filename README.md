@@ -186,8 +186,10 @@ Welcome:
 - [x] Phase 2 — SFT with LoRA on Tucano-1b1-Instruct: masked-loss instruction
       tuning for the *mote e glosa* task (`scripts/sft.py`, run on a free GPU
       via `notebooks/train_sft.ipynb`)
-- [ ] Phase 3 — preference pairs + a tiny reward model
-- [ ] Phase 4 — best-of-N reranking / rejection-sampling fine-tune
+- [x] Phase 3 — preference pairs (`make_prefs.py`) + a reward model
+      (`reward_model.py`, BERTimbau + pairwise loss, 0.91 val ranking acc)
+- [x] Phase 4 — best-of-N reranking (`best_of_n.py`)
+- [ ] rejection-sampling fine-tune (SFT on the best-of-N picks)
 - [ ] a `samples/comparison.md`-style side-by-side + a small web demo
 
 See **[samples/comparison.md](samples/comparison.md)** for the same prompt run
