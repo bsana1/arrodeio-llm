@@ -139,6 +139,33 @@ A 1.1B model won't fine-tune on a small laptop (an 8 GB CPU machine needs ~90 s
 
 **[▶ Open `notebooks/train_sft.ipynb` in Colab](https://colab.research.google.com/github/bsana1/arrodeio-llm/blob/main/notebooks/train_sft.ipynb)** — ~10 min on a free T4, then download the ~9 MB adapter into `model/cordel-sft-lora/` and run `chat.py` locally (slow inference, but it works).
 
+### Track 2, Phase 3 — reward model
+
+Trains a scorer so that, for a `(prompt, chosen, rejected)` triple,
+`score(chosen) > score(rejected)` — the Bradley-Terry pairwise loss
+`-log σ(r_chosen − r_rejected)`. The model never sees an absolute score, only
+which of two is better.
+
+```bash
+python scripts/make_prefs.py       # data/sft*.jsonl -> data/prefs.jsonl (2400 pairs)
+python scripts/reward_model.py     # BERTimbau + a scalar head, ~15 min CPU -> model/reward-model/
+python scripts/score.py "<prompt>" "<response>"
+```
+
+`make_prefs.py` synthesises the preferences: `chosen` = a real cordel response,
+`rejected` = a deliberately worse version (off-topic stanza / shuffled lines /
+truncated / flattened to prose). Not subtle, but it's the real mechanism.
+
+### Track 2, Phase 4 — best-of-N
+
+No training. Generate N candidates from the Phase 2 model, score each with the
+reward model, keep the best.
+
+```bash
+python scripts/best_of_n.py "Glose o mote: «O apressado come cru.»" -n 5
+python scripts/best_of_n.py "Faça uma estrofe sobre a lua" -n 6 --model gpt2-ft   # faster
+```
+
 ## Contributing to the dataset
 
 More material makes both models better (and the fine-tuned one noticeably so).

@@ -20,3 +20,7 @@ data/sft_synth.jsonl
 
 # HuggingFace model cache, if it lands here
 .cache/
+
+# Phase 3-4 generated artifacts
+data/prefs.jsonl
+model/reward-model/
