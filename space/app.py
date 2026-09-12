@@ -113,13 +113,14 @@ VERSIONS = {
 }
 DESCS = {
     "v0 · do zero": "TinyGPT treinado do zero, só com o corpus de cordel (~3.6M "
-                    "parâmetros). Ainda não aprendeu o idioma — o texto sai cheio "
-                    "de palavras inventadas. · instantâneo",
+                    "parâmetros). Baixa qualidade, diversas palavras não são "
+                    "válidas. · bastante rápido",
     "v1 · GPT-2 português + cordel": "GPT-2 português (124M) com um fine-tune de "
                                      "estilo cordel. · alguns segundos",
     "v2 · Tucano + SFT (mais recente)": "Tucano-1b1-Instruct (1.1B, PT-BR nativo) + "
-                                        "LoRA treinado em pares mote → glosa. Roda em "
-                                        "GPU real (ZeroGPU). · alguns segundos",
+                                        "LoRA treinado para transformar um provérbio "
+                                        "em uma estrofe de cordel. Roda em GPU real "
+                                        "(ZeroGPU). · alguns segundos",
 }
 DEFAULT_VERSION = "v2 · Tucano + SFT (mais recente)"
 
@@ -131,7 +132,7 @@ CSS = """
 
 def generate(version, prompt):
     if not prompt or not prompt.strip():
-        return "(escreva um mote ou tema primeiro)"
+        return "(escreva um tema ou provérbio primeiro)"
     return VERSIONS[version](prompt)
 
 
@@ -148,7 +149,7 @@ with gr.Blocks(title="arrodeio-llm", css=CSS, theme=gr.themes.Monochrome()) as d
         "([modelo v2](https://huggingface.co/bsana1/arrodeio-tucano-cordel-lora)); "
         "a v1 usa um [GPT-2 em português](https://huggingface.co/bsana1/arrodeio-gpt2-cordel) "
         "com fine-tune de estilo.\n\n"
-        "Escolha uma versão (0, 1 ou 2), dê um tema ou mote (ex: *\"água mole em "
+        "Escolha uma versão (0, 1 ou 2), dê um tema ou provérbio (ex: *\"água mole em "
         "pedra dura\"*) e veja o cordel que ele escreve.\n\n"
         "[código no GitHub](https://github.com/bsana1/arrodeio-llm)"
     )
@@ -157,8 +158,8 @@ with gr.Blocks(title="arrodeio-llm", css=CSS, theme=gr.themes.Monochrome()) as d
     version.change(lambda v: DESCS[v], inputs=version, outputs=desc)
 
     prompt = gr.Textbox(
-        label="mote ou tema",
-        placeholder="ex: Glose o mote: «Água mole em pedra dura.»",
+        label="tema ou provérbio",
+        placeholder="ex: Escreva um cordel sobre: «Água mole em pedra dura.»",
         lines=2,
     )
     btn = gr.Button("gerar", variant="primary")
