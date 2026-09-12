@@ -8,7 +8,7 @@ app_file: app.py
 python_version: "3.10"
 pinned: false
 license: apache-2.0
-short_description: Um LLM brasileiro que escreve cordel, em 3 estágios de aprendizado
+short_description: Um LLM brasileiro que escreve cordel nordestino
 ---
 
 # arrodeio-llm
