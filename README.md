@@ -166,6 +166,33 @@ python scripts/best_of_n.py "Glose o mote: «O apressado come cru.»" -n 5
 python scripts/best_of_n.py "Faça uma estrofe sobre a lua" -n 6 --model gpt2-ft   # faster
 ```
 
+## Try it — a web demo of all three stages
+
+`webapp/` is a small FastAPI app (+ one static HTML page, no JS framework) that
+serves **v0** (from scratch), **v1** (GPT-2 pt + cordel), and **v2** (Tucano +
+SFT) side by side, so you can feel the progression yourself instead of reading
+about it.
+
+```bash
+cd webapp
+pip install -r requirements.txt
+V1_MODEL=../model/cordel-ft V2_ADAPTER=../model/cordel-sft-lora \
+    uvicorn app:app --reload --port 7860
+# open http://localhost:7860
+```
+
+To deploy it as a free **Hugging Face Space** (CPU, public URL, sleeps when
+idle): push `model/cordel-ft` and `model/cordel-sft-lora` to the HF Hub as
+model repos, then push `webapp/` as the Space — `scripts/deploy_space.py` does
+both. v0 ships inside the Space itself (`webapp/models_v0/`, 18 MB); v1/v2 load
+from the Hub at startup. v2 takes ~1 min per response on free CPU — that's the
+honest cost of a 1.1B model without a GPU.
+
+```bash
+huggingface-cli login                       # one-time, needs a write token
+python scripts/deploy_space.py --user <your-hf-username>
+```
+
 ## Contributing to the dataset
 
 More material makes both models better (and the fine-tuned one noticeably so).
@@ -190,7 +217,8 @@ Welcome:
       (`reward_model.py`, BERTimbau + pairwise loss, 0.91 val ranking acc)
 - [x] Phase 4 — best-of-N reranking (`best_of_n.py`)
 - [ ] rejection-sampling fine-tune (SFT on the best-of-N picks)
-- [ ] a `samples/comparison.md`-style side-by-side + a small web demo
+- [x] a small web demo (`webapp/`) — v0/v1/v2 side by side, deployable free
+      to a Hugging Face Space (`scripts/deploy_space.py`)
 
 See **[samples/comparison.md](samples/comparison.md)** for the same prompt run
 through every stage (`scripts/collect_samples.py`).
