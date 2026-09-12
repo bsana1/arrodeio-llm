@@ -113,7 +113,8 @@ VERSIONS = {
 }
 DESCS = {
     "v0 · do zero": "TinyGPT treinado do zero, só com o corpus de cordel (~3.6M "
-                    "parâmetros). Não conhece o idioma — espere não-palavras. · instantâneo",
+                    "parâmetros). Ainda não aprendeu o idioma — o texto sai cheio "
+                    "de palavras inventadas. · instantâneo",
     "v1 · GPT-2 português + cordel": "GPT-2 português (124M) com um fine-tune de "
                                      "estilo cordel. · alguns segundos",
     "v2 · Tucano + SFT (mais recente)": "Tucano-1b1-Instruct (1.1B, PT-BR nativo) + "
