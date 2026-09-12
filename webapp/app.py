@@ -87,8 +87,10 @@ def _load_v1():
 def _load_v2():
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from peft import PeftModel
+    # bf16, not fp32: on a memory-constrained CPU box fp32 (2x the RAM) pushes
+    # into swap and generation goes from ~1.5 tok/s to ~0.1 tok/s. Measured.
     tok = AutoTokenizer.from_pretrained(TUCANO_BASE)
-    model = AutoModelForCausalLM.from_pretrained(TUCANO_BASE, dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(TUCANO_BASE, dtype=torch.bfloat16)
     model = PeftModel.from_pretrained(model, V2_ADAPTER)
     model.eval()
     return {"tok": tok, "model": model}

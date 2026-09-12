@@ -43,7 +43,7 @@ def gen_tucano(prompt, n, max_new_tokens, temperature):
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from peft import PeftModel
     tok = AutoTokenizer.from_pretrained(TUCANO)
-    model = AutoModelForCausalLM.from_pretrained(TUCANO, dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(TUCANO, dtype=torch.bfloat16)
     if os.path.isdir(LORA):
         model = PeftModel.from_pretrained(model, LORA)
     model.eval()
