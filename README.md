@@ -168,10 +168,12 @@ python scripts/best_of_n.py "Faça uma estrofe sobre a lua" -n 6 --model gpt2-ft
 
 ## Try it — a web demo of all three stages
 
-`webapp/` is a small FastAPI app (+ one static HTML page, no JS framework) that
-serves **v0** (from scratch), **v1** (GPT-2 pt + cordel), and **v2** (Tucano +
-SFT) side by side, so you can feel the progression yourself instead of reading
-about it.
+Two versions of the same idea — a page serving **v0** (from scratch), **v1**
+(GPT-2 pt + cordel), and **v2** (Tucano + SFT) side by side, so you can feel
+the progression yourself instead of reading about it.
+
+**`webapp/`** — FastAPI + one static HTML page, no JS framework. Run it
+locally:
 
 ```bash
 cd webapp
@@ -181,16 +183,21 @@ V1_MODEL=../model/cordel-ft V2_ADAPTER=../model/cordel-sft-lora \
 # open http://localhost:7860
 ```
 
-To deploy it as a free **Hugging Face Space** (CPU, public URL, sleeps when
-idle): push `model/cordel-ft` and `model/cordel-sft-lora` to the HF Hub as
-model repos, then push `webapp/` as the Space — `scripts/deploy_space.py` does
-both. v0 ships inside the Space itself (`webapp/models_v0/`, 18 MB); v1/v2 load
-from the Hub at startup. v2 takes ~1 min per response on free CPU — that's the
-honest cost of a 1.1B model without a GPU.
+Heads up if you plan to host this one publicly: Hugging Face changed its free
+tier partway through this project — Docker/FastAPI Spaces on CPU-basic now
+require a **PRO** subscription ($9/mo). `scripts/deploy_space.py` still works
+for pushing the *models* to the Hub for free either way; it's the Space itself
+that now needs PRO for this SDK.
+
+**`space/`** — the same three versions rebuilt on **Gradio**, deployable to a
+**free ZeroGPU Space** (real shared GPU, no PRO needed — personal accounts get
+up to 2, if the account has a verified email and is 30+ days old). v2 runs
+noticeably faster here since it gets an actual GPU instead of free CPU.
 
 ```bash
-huggingface-cli login                       # one-time, needs a write token
-python scripts/deploy_space.py --user <your-hf-username>
+huggingface-cli login                              # one-time, needs a write token
+python scripts/deploy_space.py --user <you>         # pushes the v1/v2 models (skip if already done)
+python scripts/deploy_zerogpu_space.py --user <you> # pushes space/ + sets ZeroGPU hardware
 ```
 
 ## Contributing to the dataset
