@@ -49,13 +49,15 @@ _v1_model.eval()
 # ---- v2: Tucano + LoRA (GPU via ZeroGPU) -------------------------------
 # Load everything on CPU first, explicitly. ZeroGPU's emulation layer makes
 # torch.cuda.is_available() report True even at module level (outside any
-# @spaces.GPU call), so PEFT's auto device-placement reaches for a real GPU
-# that doesn't exist yet here and crashes with "No CUDA GPUs are available".
-# device_map={"": "cpu"} forces the adapter weights to load on CPU instead;
-# we move the whole assembled model to 'cuda' ourselves, afterward.
+# @spaces.GPU call), so PEFT's device auto-inference (peft.utils.infer_device,
+# used inside load_adapter -> load_peft_weights) reaches for a real GPU that
+# doesn't exist yet here and crashes with "No CUDA GPUs are available".
+# `device_map` (a from_pretrained/base-model concept) does NOT control this —
+# load_adapter's own parameter is `torch_device`. Pass that explicitly; we
+# move the whole assembled model to 'cuda' ourselves, afterward.
 _v2_tok = AutoTokenizer.from_pretrained(TUCANO_BASE)
 _v2_model = AutoModelForCausalLM.from_pretrained(TUCANO_BASE, dtype=torch.bfloat16)
-_v2_model = PeftModel.from_pretrained(_v2_model, V2_ADAPTER, device_map={"": "cpu"})
+_v2_model = PeftModel.from_pretrained(_v2_model, V2_ADAPTER, torch_device="cpu")
 _v2_model.eval()
 try:
     _v2_model = _v2_model.to("cuda")   # required at module level per ZeroGPU docs
