@@ -137,8 +137,19 @@ def generate(version, prompt):
 with gr.Blocks(title="arrodeio-llm", css=CSS, theme=gr.themes.Monochrome()) as demo:
     gr.Markdown(
         "# 🪕 arrodeio-llm\n"
-        "três estágios do mesmo projeto — do zero até um modelo que segue "
-        "instrução em cordel. [código no GitHub](https://github.com/bsana1/arrodeio-llm)"
+        "Um LLM em português brasileiro que escreve *cordel* — a poesia rimada "
+        "e popular do Nordeste do Brasil.\n\n"
+        "Projeto de aprendizado de **[Bernardo Sana](https://huggingface.co/bsana1)** "
+        "para explorar como os dados de treinamento afetam a qualidade do modelo "
+        "nas etapas de pré-treinamento, fine-tuning e inferência. Está na versão 2, "
+        "construída sobre o [Tucano](https://huggingface.co/TucanoBR/Tucano-1b1-Instruct) "
+        "com um adaptador LoRA "
+        "([modelo v2](https://huggingface.co/bsana1/arrodeio-tucano-cordel-lora)); "
+        "a v1 usa um [GPT-2 em português](https://huggingface.co/bsana1/arrodeio-gpt2-cordel) "
+        "com fine-tune de estilo.\n\n"
+        "Escolha uma versão (0, 1 ou 2), dê um tema ou mote (ex: *\"água mole em "
+        "pedra dura\"*) e veja o cordel que ele escreve.\n\n"
+        "[código no GitHub](https://github.com/bsana1/arrodeio-llm)"
     )
     version = gr.Radio(list(VERSIONS.keys()), value=DEFAULT_VERSION, label="versão")
     desc = gr.Markdown(DESCS[DEFAULT_VERSION])
