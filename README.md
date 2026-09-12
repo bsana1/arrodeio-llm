@@ -168,9 +168,14 @@ python scripts/best_of_n.py "Faça uma estrofe sobre a lua" -n 6 --model gpt2-ft
 
 ## Try it — a web demo of all three stages
 
-Two versions of the same idea — a page serving **v0** (from scratch), **v1**
-(GPT-2 pt + cordel), and **v2** (Tucano + SFT) side by side, so you can feel
-the progression yourself instead of reading about it.
+**[▶ Live demo](https://huggingface.co/spaces/bsana1/arrodeio-llm-gradio)** —
+v0 (from scratch), v1 (GPT-2 pt + cordel), and v2 (Tucano + SFT) side by side,
+free, running on a real shared GPU (Hugging Face ZeroGPU). Pick a version,
+type a mote or theme, hit *gerar*.
+
+Two versions of the same idea in this repo — a page serving all three stages
+side by side, so you can feel the progression yourself instead of reading
+about it.
 
 **`webapp/`** — FastAPI + one static HTML page, no JS framework. Run it
 locally:
@@ -189,10 +194,11 @@ require a **PRO** subscription ($9/mo). `scripts/deploy_space.py` still works
 for pushing the *models* to the Hub for free either way; it's the Space itself
 that now needs PRO for this SDK.
 
-**`space/`** — the same three versions rebuilt on **Gradio**, deployable to a
+**`space/`** — the same three versions rebuilt on **Gradio**, deployed to a
 **free ZeroGPU Space** (real shared GPU, no PRO needed — personal accounts get
-up to 2, if the account has a verified email and is 30+ days old). v2 runs
-noticeably faster here since it gets an actual GPU instead of free CPU.
+up to 2, if the account has a verified email and is 30+ days old). That's
+what's running at the live demo link above — v2 answers in single-digit
+seconds instead of the ~1 min free CPU needs.
 
 ```bash
 huggingface-cli login                              # one-time, needs a write token
