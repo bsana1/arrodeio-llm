@@ -33,19 +33,15 @@ def main():
     space_repo = args.space_repo or f"{args.user}/arrodeio-llm-gradio"
     path = os.path.join(BASE, "..", "space")
 
-    print(f"pushing {path} -> {space_repo} (Gradio Space)")
-    api.create_repo(space_repo, repo_type="space", space_sdk="gradio", exist_ok=True)
+    print(f"creating {space_repo} with ZeroGPU hardware (must be set AT creation — "
+          f"the default cpu-basic tier now requires PRO, even if you plan to "
+          f"switch hardware right after)")
+    api.create_repo(space_repo, repo_type="space", space_sdk="gradio", exist_ok=True,
+                    space_hardware=SpaceHardware.ZERO_A10G)
+    print(f"pushing {path} -> {space_repo}")
     api.upload_folder(folder_path=path, repo_id=space_repo, repo_type="space",
                       ignore_patterns=["__pycache__", "*.pyc"])
     print(f"  pushed: https://huggingface.co/spaces/{space_repo}")
-
-    print("requesting ZeroGPU hardware ...")
-    try:
-        api.request_space_hardware(space_repo, hardware=SpaceHardware.ZERO_A10G)
-        print("  done — hardware set to zero-a10g")
-    except Exception as e:
-        print(f"  !! could not set hardware automatically ({e})")
-        print(f"  Set it by hand: Space page -> Settings -> Hardware -> ZeroGPU")
 
     print(f"\nSpace: https://huggingface.co/spaces/{space_repo}")
     print("First build takes a few minutes — watch the Space's 'Logs' tab.")
