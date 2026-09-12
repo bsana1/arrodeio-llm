@@ -17,9 +17,15 @@ with no CUDA build of torch (developing on a Mac, for instance).
 import os
 import sys
 
+# `spaces` must be imported before `torch` (ZeroGPU docs): it patches torch's
+# CUDA internals, and that patch has to be in place before anything else
+# (including the module-level .to("cuda") below) touches CUDA — otherwise the
+# real GPU handoff when @spaces.GPU actually forks a worker fails with
+# "RuntimeError: No CUDA GPUs are available" even though the Space's hardware
+# is correctly zero-a10g.
+import spaces
 import torch
 import gradio as gr
-import spaces
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
