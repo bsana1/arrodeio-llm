@@ -133,7 +133,21 @@ CSS = """
 def generate(version, prompt):
     if not prompt or not prompt.strip():
         return "(escreva um tema ou provérbio primeiro)"
-    return VERSIONS[version](prompt)
+    try:
+        return VERSIONS[version](prompt)
+    except Exception:
+        # v2 runs on HF's free ZeroGPU tier, which has a very small daily GPU
+        # quota (a few minutes) shared across all visitors + our own testing.
+        # When it's exhausted, the scheduler fails to hand the worker a real
+        # GPU and `spaces` raises a generic "No CUDA GPUs are available" —
+        # show a plain explanation instead of a raw error popup.
+        if version.startswith("v2"):
+            return ("⚠️ A v2 roda numa GPU compartilhada e gratuita (Hugging Face "
+                    "ZeroGPU), que tem uma cota diária bem pequena e é dividida "
+                    "entre todos os visitantes. Parece que a cota está esgotada "
+                    "agora — tente de novo em alguns minutos, ou use a v0/v1 "
+                    "enquanto isso (rodam em CPU, sem esse limite).")
+        return "⚠️ Ocorreu um erro ao gerar. Tente de novo em alguns instantes."
 
 
 with gr.Blocks(title="arrodeio-llm", css=CSS, theme=gr.themes.Monochrome()) as demo:
