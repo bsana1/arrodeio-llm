@@ -38,7 +38,7 @@ from peft import PeftModel
 TUCANO_BASE = "TucanoBR/Tucano-1b1-Instruct"
 V1_MODEL = os.environ.get("V1_MODEL", "bsana1/arrodeio-gpt2-cordel")
 V2_ADAPTER = os.environ.get("V2_ADAPTER", "bsana1/arrodeio-tucano-cordel-lora")
-MAX_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", 110))
+MAX_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", 200))
 
 # ---- v0: from-scratch TinyGPT (CPU, instant) --------------------------
 _ckpt = torch.load(os.path.join(HERE, "models_v0", "checkpoint.pt"), map_location="cpu")
@@ -93,7 +93,7 @@ def run_v1(prompt):
     return _v1_tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True).strip()
 
 
-@spaces.GPU(duration=60)
+@spaces.GPU(duration=120)
 def run_v2(prompt):
     text = (prompt or "").strip() or "Faça uma estrofe de cordel sobre a saudade."
     enc = _v2_tok.apply_chat_template([{"role": "user", "content": text}],
