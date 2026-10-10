@@ -9,14 +9,13 @@ learned the cordel shape but not to stay on topic.
 v2 fixes the prompt side and the unit of training:
   - Each response is 1 or 2 consecutive, adjacent stanzas of a real folheto
     (verbatim), so ideas have to carry across stanzas.
-  - The topic is written by Tucano-1b1-Instruct itself, reading the verses
-    ("diga em poucas palavras sobre o que tratam"). Imperfect, but grounded in
-    the text, and anything unusable is dropped rather than replaced by a random
-    theme.
+  - The topic of every chunk was written by hand (by Claude, reading each one;
+    data/sft_v2_topics.jsonl) — teacher labeling. We first tried having Tucano
+    1.1B write them (--llm), but it mostly paraphrases the first verse
+    ("após ter apanhado,"), which makes ungrammatical prompts.
 
-Needs a GPU to be quick (Colab T4: a few minutes); works on CPU, slowly.
-
-    python scripts/make_sft_data_v2.py        # writes data/sft_v2.jsonl
+    python scripts/make_sft_data_v2.py        # writes data/sft_v2.jsonl (no GPU needed)
+    python scripts/make_sft_data_v2.py --llm  # re-label with Tucano instead (GPU recommended)
     SFT_DATA=data/sft.jsonl,data/sft_v2.jsonl python scripts/sft.py
 """
 
@@ -41,8 +40,24 @@ BATCH = 8 if torch.cuda.is_available() else 1
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 ASK = ("Leia estes versos de cordel e diga, em no máximo 8 palavras, qual é o "
-       "assunto deles. Responda só com o assunto (por exemplo: \"a seca no sertão\" "
-       "ou \"um cangaceiro preso pela polícia\"), sem explicar.\n\n{verses}")
+       "assunto deles, como uma expressão nominal (começando por um substantivo "
+       "ou artigo, nunca por um verbo nem copiando um trecho). Responda só com o assunto.\n\n{verses}")
+
+# Few-shot (verses, topic) so the 1.1B labeler imitates the format instead of
+# copying a phrase out of the verses.
+FEWSHOT = [
+    ("Seca as terras as folhas caem,\nMorre o gado sai o povo,\nO vento varre a campina,\n"
+     "Rebenta a seca de novo;\nCinco, seis mil emigrantes\nFlagelados retirantes\n"
+     "Vagam mendigando o pão,\nAcabam-se os animais\nFicando limpo os currais\nOnde houve a criação.",
+     "a seca e a fuga dos retirantes"),
+    ("Eu juro pelo meu rifle,\nQue o Padre José Paulino\nCai sempre na ratoeira\n"
+     "E paga o grosso e o fino,\nNão há de casar mais homem,\nNem batizar mais menino.",
+     "a ameaça de um cangaceiro a um padre"),
+    ("Vê-se uma mãe cadavérica\nQue já não pode falar,\nEstreitando o filho ao peito\n"
+     "Sem o poder consolar\nLança-lhe um olhar materno\nSoluça implora ao Eterno\n"
+     "Invoca da Virgem o nome\nEla débil triste e louca\nApenas beija-lhe a boca\nE ambos morrem de fome.",
+     "a morte de uma mãe e seu filho de fome"),
+]
 
 INSTR_1 = [
     "Escreva uma estrofe de cordel sobre {t}.",
@@ -96,6 +111,12 @@ def clean_topic(raw):
         return None
     if re.search(r"versos|estrofe|cordel|poema", t, re.I):    # labeler described the form, not the content
         return None
+    # fragments copied from the verses ("que se dizem cristãos", "era João Batista",
+    # "oliveiros disse") rather than a noun phrase naming the subject
+    if words[0].lower() in {"que", "era", "é", "foi", "são", "e", "mas", "se", "com", "pois", "como", "quando", "onde", "ao", "já", "não"}:
+        return None
+    if words[-1].lower().strip(",.") in {"disse", "diz", "respondeu", "falou", "dizendo", "que", "e", "de", "da", "do"}:
+        return None
     return t[0].lower() + t[1:]
 
 
@@ -104,8 +125,12 @@ def label(tok, model, verse_list):
     topics = []
     for i in range(0, len(verse_list), BATCH):
         batch = verse_list[i:i + BATCH]
+        shots = []
+        for sv, st in FEWSHOT:
+            shots += [{"role": "user", "content": ASK.format(verses=sv)},
+                      {"role": "assistant", "content": st}]
         prompts = [tok.apply_chat_template(
-            [{"role": "user", "content": ASK.format(verses=v)}],
+            shots + [{"role": "user", "content": ASK.format(verses=v)}],
             tokenize=False, add_generation_prompt=True) for v in batch]
         enc = tok(prompts, return_tensors="pt", padding=True, add_special_tokens=False).to(device)
         out = model.generate(**enc, max_new_tokens=24, do_sample=False,
@@ -117,22 +142,34 @@ def label(tok, model, verse_list):
     return topics
 
 
+TOPICS = os.path.join(BASE, "..", "data", "sft_v2_topics.jsonl")
+
+
+def load_written_topics():
+    """(verses, topic) pairs whose topics were written by hand (by Claude, reading each chunk)."""
+    rows = [json.loads(l) for l in open(TOPICS, encoding="utf-8")]
+    return [r["verses"] for r in rows], [r["topic"] for r in rows]
+
+
 def main():
-    chunks = []
-    for path in sorted(glob.glob(os.path.join(CORDEL_DIR, "*.txt"))):
-        chunks += windows(path)
-    random.shuffle(chunks)
-    print(f"{len(chunks)} chunks (1- and 2-stanza); labeling with {LABELER} on {device}")
-
-    tok = AutoTokenizer.from_pretrained(LABELER)
-    tok.padding_side = "left"
-    if tok.pad_token is None:
-        tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        LABELER, dtype=torch.bfloat16 if device == "cuda" else torch.float32).to(device)
-    model.eval()
-
-    topics = label(tok, model, chunks)
+    import sys
+    if "--llm" in sys.argv:        # re-label with Tucano itself (weak: mostly paraphrases the first line)
+        chunks = []
+        for path in sorted(glob.glob(os.path.join(CORDEL_DIR, "*.txt"))):
+            chunks += windows(path)
+        random.shuffle(chunks)
+        print(f"{len(chunks)} chunks; labeling with {LABELER} on {device}")
+        tok = AutoTokenizer.from_pretrained(LABELER)
+        tok.padding_side = "left"
+        if tok.pad_token is None:
+            tok.pad_token = tok.eos_token
+        model = AutoModelForCausalLM.from_pretrained(
+            LABELER, dtype=torch.bfloat16 if device == "cuda" else torch.float32).to(device)
+        model.eval()
+        topics = label(tok, model, chunks)
+    else:
+        chunks, topics = load_written_topics()
+        print(f"{len(chunks)} chunks with written topics ({os.path.relpath(TOPICS)})")
 
     kept, dropped = [], 0
     for verses, topic in zip(chunks, topics):

@@ -12,7 +12,7 @@ model/tokenizer.json
 model/checkpoint.pt
 model/cordel-ft/
 model/cordel-sft/
-model/cordel-sft-lora/
+model/cordel-sft-lora*/
 
 # Generated data (rebuild with the scripts)
 data/corpus.txt
