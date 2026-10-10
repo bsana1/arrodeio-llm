@@ -37,13 +37,12 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model
 
-BASE_MODEL = "TucanoBR/Tucano-1b1-Instruct"
+BASE_MODEL = os.environ.get("SFT_BASE", "TucanoBR/Tucano-1b1-Instruct")
 BASE = os.path.dirname(__file__)
-OUT_DIR = os.path.join(BASE, "..", "model", "cordel-sft-lora")
-DATA_PATHS = [
-    os.path.join(BASE, "..", "data", "sft.jsonl"),
-    os.path.join(BASE, "..", "data", "sft_synth.jsonl"),
-]
+OUT_DIR = os.environ.get("SFT_OUT", os.path.join(BASE, "..", "model", "cordel-sft-lora"))
+# comma-separated paths, relative to the repo root; default = original v2 data
+DATA_PATHS = [os.path.join(BASE, "..", p) for p in os.environ.get(
+    "SFT_DATA", "data/sft.jsonl,data/sft_synth.jsonl").split(",")]
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -52,6 +51,8 @@ lora_r = 16
 lora_alpha = 32
 lora_dropout = 0.05
 lora_targets = ["q_proj", "k_proj", "v_proj", "o_proj"]
+if os.environ.get("SFT_MLP") == "1":      # also adapt the feed-forward layers
+    lora_targets += ["gate_proj", "up_proj", "down_proj"]
 
 batch_size = int(os.environ.get("SFT_BATCH", 4 if device == "cuda" else 1))
 max_len = int(os.environ.get("SFT_MAXLEN", 320))
