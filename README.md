@@ -134,6 +134,16 @@ style + the *mote e glosa* task on top.
   masked loss (labels `-100` on the instruction tokens) + the chat template.
 - **`scripts/chat.py`:** a REPL. `--base` talks to raw Tucano for contrast.
 
+**v2.1 (current)** — v2 wrote cordel-shaped verse but ignored the topic (ask for
+"o mar", get a scene about a patroa). Cause: 600 of its 650 pairs had prompts
+guessed from keyword regexes with a *random* fallback theme, so many prompts did
+not describe their responses. v2.1 keeps the recipe and fixes the data: 797
+chunks of 1-2 adjacent real stanzas, each with a topic **written by hand**
+(`data/sft_v2_topics.jsonl`, built by `scripts/make_sft_data_v2.py`; a first
+attempt with Tucano 1.1B as the labeler just paraphrased the first verse, so it
+was dropped). Train with `notebooks/train_sft_v3.ipynb`. The old adapter is the
+`v2.0` tag on the HF model repo. Still weak: rhyme, and coherence past ~6 lines.
+
 A 1.1B model won't fine-tune on a small laptop (an 8 GB CPU machine needs ~90 s
 *per example*). Run it on a free GPU instead:
 

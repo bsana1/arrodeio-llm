@@ -109,7 +109,7 @@ def run_v2(prompt):
 VERSIONS = {
     "v0 · do zero": run_v0,
     "v1 · GPT-2 português + cordel": run_v1,
-    "v2 · Tucano + SFT (mais recente)": run_v2,
+    "v2.1 · Tucano + SFT (mais recente)": run_v2,
 }
 DESCS = {
     "v0 · do zero": "TinyGPT treinado do zero, só com o corpus de cordel (~3.6M "
@@ -117,12 +117,12 @@ DESCS = {
                     "válidas. · bastante rápido",
     "v1 · GPT-2 português + cordel": "GPT-2 português (124M) com um fine-tune de "
                                      "estilo cordel. · alguns segundos",
-    "v2 · Tucano + SFT (mais recente)": "Tucano-1b1-Instruct (1.1B, PT-BR nativo) + "
-                                        "LoRA treinado para transformar um provérbio "
-                                        "em uma estrofe de cordel. Roda em GPU real "
+    "v2.1 · Tucano + SFT (mais recente)": "Tucano-1b1-Instruct (1.1B, PT-BR nativo) + "
+                                        "LoRA treinado para escrever cordel sobre o tema que você der. "
+                                        "Roda em GPU real "
                                         "(ZeroGPU). · alguns segundos",
 }
-DEFAULT_VERSION = "v2 · Tucano + SFT (mais recente)"
+DEFAULT_VERSION = "v2.1 · Tucano + SFT (mais recente)"
 
 CSS = """
 .gradio-container { font-family: "SF Mono","Menlo","Consolas",monospace !important; }
@@ -141,7 +141,7 @@ def generate(version, prompt):
         # When it's exhausted, the scheduler fails to hand the worker a real
         # GPU and `spaces` raises a generic "No CUDA GPUs are available" —
         # show a plain explanation instead of a raw error popup.
-        if version.startswith("v2"):
+        if version.startswith("v2.1"):
             return ("⚠️ A v2 roda numa GPU compartilhada e gratuita (Hugging Face "
                     "ZeroGPU), que tem uma cota diária bem pequena e é dividida "
                     "entre todos os visitantes. Parece que a cota está esgotada "
@@ -157,13 +157,13 @@ with gr.Blocks(title="arrodeio-llm", css=CSS, theme=gr.themes.Monochrome()) as d
         "e popular do Nordeste do Brasil.\n\n"
         "Projeto de aprendizado de **[Bernardo Sana](https://huggingface.co/bsana1)** "
         "para explorar como os dados de treinamento afetam a qualidade do modelo "
-        "nas etapas de pré-treinamento, fine-tuning e inferência. Está na versão 2, "
+        "nas etapas de pré-treinamento, fine-tuning e inferência. Está na versão 2.1, "
         "construída sobre o [Tucano](https://huggingface.co/TucanoBR/Tucano-1b1-Instruct) "
         "com um adaptador LoRA "
-        "([modelo v2](https://huggingface.co/bsana1/arrodeio-tucano-cordel-lora)); "
+        "([modelo v2.1](https://huggingface.co/bsana1/arrodeio-tucano-cordel-lora)); "
         "a v1 usa um [GPT-2 em português](https://huggingface.co/bsana1/arrodeio-gpt2-cordel) "
         "com fine-tune de estilo.\n\n"
-        "Escolha uma versão (0, 1 ou 2), dê um tema ou provérbio (ex: *\"água mole em "
+        "Escolha uma versão (0, 1 ou 2.1), dê um tema ou provérbio (ex: *\"água mole em "
         "pedra dura\"*) e veja o cordel que ele escreve.\n\n"
         "[código no GitHub](https://github.com/bsana1/arrodeio-llm)"
     )
