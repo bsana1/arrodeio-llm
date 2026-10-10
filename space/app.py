@@ -15,6 +15,7 @@ with no CUDA build of torch (developing on a Mac, for instance).
 """
 
 import os
+import re
 import sys
 
 # `spaces` must be imported before `torch` (ZeroGPU docs): it patches torch's
@@ -93,9 +94,21 @@ def run_v1(prompt):
     return _v1_tok.decode(out[0][ids.shape[1]:], skip_special_tokens=True).strip()
 
 
+_INSTRUCTION_START = re.compile(
+    r"^(escreva|escrever|fa[çc]a|componha|conte|glose|continue|no estilo|crie|fa[çc]a-me)\b", re.I)
+
+
+def as_instruction(text):
+    """v2.1 was trained on instructions ("Escreva um cordel sobre …"); a bare phrase
+    like "batatinha quando nasce" gets prose back, so wrap it."""
+    if not text or _INSTRUCTION_START.match(text) or text.endswith("?"):
+        return text
+    return f"Escreva um cordel sobre: {text.rstrip('.')}."
+
+
 @spaces.GPU(duration=120)
 def run_v2(prompt):
-    text = (prompt or "").strip() or "Faça uma estrofe de cordel sobre a saudade."
+    text = as_instruction((prompt or "").strip()) or "Faça uma estrofe de cordel sobre a saudade."
     enc = _v2_tok.apply_chat_template([{"role": "user", "content": text}],
                                       tokenize=True, add_generation_prompt=True, return_tensors="pt")
     ids = enc["input_ids"] if hasattr(enc, "keys") else enc
