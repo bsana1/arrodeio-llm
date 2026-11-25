@@ -58,6 +58,8 @@ batch_size = int(os.environ.get("SFT_BATCH", 4 if device == "cuda" else 1))
 max_len = int(os.environ.get("SFT_MAXLEN", 320))
 learning_rate = 2e-4
 epochs = float(os.environ.get("SFT_EPOCHS", 2))
+accum = int(os.environ.get("SFT_ACCUM", 1))            # micro-batches per optimizer step
+grad_ckpt = os.environ.get("SFT_GC") == "1"            # trade ~30% speed for much less activation memory
 eval_every = int(os.environ.get("SFT_EVAL_EVERY", 40))
 # ---------------------------------------------------------------------
 
@@ -66,8 +68,8 @@ if device == "cpu":
     torch.set_num_threads(os.cpu_count() or 4)
 
 DEMO_PROMPTS = [
-    "Glose o mote: «Quem não arrisca, não petisca.»",
-    "Faça uma estrofe de cordel sobre a lua no sertão.",
+    "Escreva um cordel sobre o mar.",
+    "Escreva um cordel sobre: batatinha quando nasce.",
 ]
 
 
@@ -129,7 +131,7 @@ def demo(model, tok, n_tokens=70):
         enc = chat_inputs(tok, p)
         out = model.generate(**enc, max_new_tokens=n_tokens, do_sample=True,
                              temperature=0.7, top_k=50, repetition_penalty=1.2,
-                             pad_token_id=tok.eos_token_id)
+                             use_cache=True, pad_token_id=tok.eos_token_id)
         text = tok.decode(out[0][enc["input_ids"].shape[1]:], skip_special_tokens=True)
         print(f"  › {p}\n    " + text.replace("\n", "\n    ")[:320], flush=True)
     model.train()
@@ -143,6 +145,10 @@ def main():
         tok.pad_token = tok.eos_token
     dtype = torch.bfloat16 if device == "cuda" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=dtype).to(device)
+    if grad_ckpt:
+        model.config.use_cache = False
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+        model.enable_input_require_grads()
 
     model = get_peft_model(model, LoraConfig(
         r=lora_r, lora_alpha=lora_alpha, lora_dropout=lora_dropout,
@@ -159,9 +165,9 @@ def main():
     if not pairs:
         sys.exit("No SFT data.")
     examples = [build_example(tok, p["prompt"], p["response"]) for p in pairs]
-    steps = max(1, int(len(examples) * epochs / batch_size))
-    print(f"{len(examples)} examples · batch {batch_size} · {epochs} epochs = {steps} steps",
-          flush=True)
+    steps = max(1, int(len(examples) * epochs / (batch_size * accum)))
+    print(f"{len(examples)} examples · batch {batch_size} x accum {accum} · {epochs} epochs "
+          f"= {steps} steps", flush=True)
 
     optim = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad),
                               lr=learning_rate)
@@ -169,19 +175,20 @@ def main():
 
     order, cursor, t0, running = [], 0, time.time(), 0.0
     for step in range(steps):
-        if cursor + batch_size > len(order):
-            order = torch.randperm(len(examples)).tolist()
-            cursor = 0
-        rows = [examples[i] for i in order[cursor: cursor + batch_size]]
-        cursor += batch_size
-
-        x, y, m = collate(rows, tok.pad_token_id)
-        loss = model(input_ids=x, attention_mask=m, labels=y).loss
         optim.zero_grad(set_to_none=True)
-        loss.backward()
+        for _ in range(accum):
+            if cursor + batch_size > len(order):
+                order = torch.randperm(len(examples)).tolist()
+                cursor = 0
+            rows = [examples[i] for i in order[cursor: cursor + batch_size]]
+            cursor += batch_size
+
+            x, y, m = collate(rows, tok.pad_token_id)
+            loss = model(input_ids=x, attention_mask=m, labels=y).loss / accum
+            loss.backward()
+            running += loss.item()
         torch.nn.utils.clip_grad_norm_((p for p in model.parameters() if p.requires_grad), 1.0)
         optim.step()
-        running += loss.item()
 
         if step % eval_every == 0 or step == steps - 1:
             avg = running / (eval_every if step else 1)
